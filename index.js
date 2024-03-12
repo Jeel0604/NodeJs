@@ -45,7 +45,7 @@ app.get('/api/todos', async (req, res) => {
             todosCompleted: await Todo.find({ completed: true }), todosNotCompleted:
                 await Todo.find({ completed: false })
         };
-
+        console.log(filteredData);
         res.json(filteredData);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
