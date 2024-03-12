@@ -3,10 +3,12 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
-const port = 5000;
+const port = 4200;
 
 
-app.use(cors());
+app.use(cors({
+    origin: 'https://cute-red-fox-tie.cyclic.app'
+}));
 app.use(bodyParser.json());
 app.use(express.json());
 
@@ -42,10 +44,22 @@ app.get('/api/todos', async (req, res) => {
     }
 });
 
+function getCurrentDate() {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+
+    return formattedDate;
+}
+
+
 app.post('/api/todos', async (req, res) => {
     try {
         const newTodoData = req.body;
-        const currentDate = new Date().toISOString();
+        const currentDate = getCurrentDate();
         const newTodo = new Todo({
             title: newTodoData.title,
             description: newTodoData.description,
