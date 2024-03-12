@@ -8,12 +8,9 @@ const port = 4200;
 
 
 app.use(cors({
-    origin: 'https://cute-red-fox-tie.cyclic.app'
+    origin: ['http://localhost:4200', 'https://cute-red-fox-tie.cyclic.app']
 }));
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-    next();
-});
+
 app.use(bodyParser.json());
 app.use(express.json());
 
