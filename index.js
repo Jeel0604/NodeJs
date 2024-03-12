@@ -35,16 +35,24 @@ const todoSchema = new mongoose.Schema({
 
 }, { collection: "CollectionTodo" });
 
+const todos = [];
 const Todo = mongoose.model('Todo', todoSchema);
+
 
 app.get('/api/todos', async (req, res) => {
     try {
-        const todos = await Todo.find();
-        res.json(todos);
+        const filteredData = {
+            todosCompleted: await Todo.find({ completed: true }), todosNotCompleted:
+                await Todo.find({ completed: false })
+        };
+
+        res.json(filteredData);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+
 
 function getCurrentDate() {
     const currentDate = new Date();
@@ -99,7 +107,6 @@ app.get('/api/todos/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch todo' });
     }
 });
-
 
 
 
