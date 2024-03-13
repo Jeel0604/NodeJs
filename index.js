@@ -50,6 +50,21 @@ const Todo = mongoose.model('Todo', todoSchema);
 const Users = mongoose.model('Users', userSchema);
 
 
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    jwt.verify(token, 'your-secret-key', (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+        req.user = decoded;
+        next();
+    });
+};
+
 app.get('/api/users', async (req, res) => {
     try {
         const users = await Users.find();
@@ -85,15 +100,17 @@ function getCurrentDate() {
 }
 
 
-app.post('/api/todos', async (req, res) => {
+app.post('/api/todos', verifyToken, async (req, res) => {
     try {
+        // Now req.user will contain the decoded user object
         const newTodoData = req.body;
         const currentDate = getCurrentDate();
 
+        // Use req.user.userId to access the user ID
         const userId = req.user.userId;
 
         const newTodo = new Todo({
-            userId: "65f19455d0b58059520e7b7d",
+            userId: userId,
             title: newTodoData.title,
             description: newTodoData.description,
             completed: newTodoData.completed || false,
@@ -105,7 +122,6 @@ app.post('/api/todos', async (req, res) => {
 
         console.log("Data added:", savedTodo);
     } catch (error) {
-        // Handle errors
         console.error("Error saving todo:", error);
         res.status(500).json({ error: 'Failed to save todo' });
     }
