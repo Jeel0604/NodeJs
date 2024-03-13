@@ -93,7 +93,7 @@ app.post('/api/todos', async (req, res) => {
         const userId = req.user.userId;
 
         const newTodo = new Todo({
-            userId: userId,
+            userId: "65f19455d0b58059520e7b7d",
             title: newTodoData.title,
             description: newTodoData.description,
             completed: newTodoData.completed || false,
