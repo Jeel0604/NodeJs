@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const app = express();
 const port = 4200;
 
@@ -35,8 +37,19 @@ const todoSchema = new mongoose.Schema({
 
 }, { collection: "CollectionTodo" });
 
+
+const userSchema = new mongoose.Schema({
+    username: String,
+    password: String,
+    email: String
+}, { collection: "Users" });
+
 const todos = [];
 const Todo = mongoose.model('Todo', todoSchema);
+const Users = mongoose.model('Users', userSchema);
+
+
+
 
 
 app.get('/api/todos', async (req, res) => {
@@ -148,6 +161,67 @@ app.delete('/api/todos/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to update todo' });
     }
 });
+
+
+
+// Registration
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, password, email } = req.body;
+
+        // Check if the username or email already exists
+        const existingUser = await Users.findOne({ $or: [{ username }, { email }] });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username or email already exists' });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const newUser = new Users({
+            username,
+            password: hashedPassword,
+            email
+        });
+
+        await newUser.save();
+
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ error: 'Failed to register user' });
+    }
+});
+
+// Login
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Check if the user exists
+        const user = await Users.findOne({ username });
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        // Check if the password is correct
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ userId: user._id }, 'your_secret_key', { expiresIn: '1h' });
+
+        res.json({ token });
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).json({ error: 'Failed to login' });
+    }
+});
+
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
