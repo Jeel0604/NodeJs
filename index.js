@@ -30,12 +30,13 @@ db.once('open', () => {
 });
 
 const todoSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' }, // Reference to Users collection
     title: String,
     description: String,
     completed: Boolean,
     date: String
-
 }, { collection: "CollectionTodo" });
+
 
 
 const userSchema = new mongoose.Schema({
@@ -49,22 +50,27 @@ const Todo = mongoose.model('Todo', todoSchema);
 const Users = mongoose.model('Users', userSchema);
 
 
-
-
-
-app.get('/api/todos', async (req, res) => {
+app.get('/api/users', async (req, res) => {
     try {
-        const filteredData = {
-            todosCompleted: await Todo.find({ completed: true }), todosNotCompleted:
-                await Todo.find({ completed: false })
-        };
-        console.log(filteredData);
-        res.json(filteredData);
+        const users = await Users.find();
+        res.json(users);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
+
+app.get('/api/todos', async (req, res) => {
+    try {
+        const userId = req.user.userId; // Assuming userId is available in req.user after authentication
+
+        const todos = await Todo.find({ userId: userId });
+        res.json(todos);
+    } catch (error) {
+        console.error('Error fetching todos:', error);
+        res.status(500).json({ error: 'Failed to fetch todos' });
+    }
+});
 
 
 function getCurrentDate() {
@@ -83,7 +89,11 @@ app.post('/api/todos', async (req, res) => {
     try {
         const newTodoData = req.body;
         const currentDate = getCurrentDate();
+
+        const userId = req.user.userId;
+
         const newTodo = new Todo({
+            userId: userId,
             title: newTodoData.title,
             description: newTodoData.description,
             completed: newTodoData.completed || false,
@@ -91,15 +101,16 @@ app.post('/api/todos', async (req, res) => {
         });
 
         const savedTodo = await newTodo.save();
-
         res.status(201).json(savedTodo);
 
         console.log("Data added:", savedTodo);
     } catch (error) {
+        // Handle errors
         console.error("Error saving todo:", error);
         res.status(500).json({ error: 'Failed to save todo' });
     }
 });
+
 
 app.get('/api/todos/:id', async (req, res) => {
     const todoId = req.params.id;
@@ -120,7 +131,6 @@ app.get('/api/todos/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch todo' });
     }
 });
-
 
 
 app.put('/api/todos/:id', async (req, res) => {
@@ -163,7 +173,6 @@ app.delete('/api/todos/:id', async (req, res) => {
 });
 
 
-
 // Registration
 app.post('/api/register', async (req, res) => {
     try {
@@ -176,14 +185,10 @@ app.post('/api/register', async (req, res) => {
         }
 
         // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 5);
 
         // Create new user
-        const newUser = new Users({
-            username,
-            password: hashedPassword,
-            email
-        });
+        const newUser = new Users({ username, password: hashedPassword, email });
 
         await newUser.save();
 
@@ -212,7 +217,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ userId: user._id }, 'your_secret_key', { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user._id }, 'jeel', { expiresIn: '1h' });
 
         res.json({ token });
     } catch (error) {
