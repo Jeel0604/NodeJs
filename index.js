@@ -129,25 +129,25 @@ app.post('/api/todos', verifyToken, async (req, res) => {
 });
 
 
-// app.get('/api/todos/:id', async (req, res) => {
-//     const todoId = req.params.id;
+app.get('/api/todos/byid/:id', async (req, res) => {
+    const todoId = req.params.id;
 
-//     try {
+    try {
 
-//         const todo = await Todo.findOne({ _id: todoId });
+        const todo = await Todo.findOne({ _id: todoId });
 
-//         if (!todo) {
-//             return res.status(404).json({ error: 'Todo not found' });
-//         }
+        if (!todo) {
+            return res.status(404).json({ error: 'Todo not found' });
+        }
 
-//         res.json(todo);
+        res.json(todo);
 
-//         console.log('Todo retrieved successfully:', todo);
-//     } catch (error) {
-//         console.error('Error fetching todo:', error);
-//         res.status(500).json({ error: 'Failed to fetch todo' });
-//     }
-// });
+        console.log('Todo retrieved successfully:', todo);
+    } catch (error) {
+        console.error('Error fetching todo:', error);
+        res.status(500).json({ error: 'Failed to fetch todo' });
+    }
+});
 
 
 app.put('/api/todos/:id', async (req, res) => {
@@ -165,6 +165,7 @@ app.put('/api/todos/:id', async (req, res) => {
         res.json(updatedTodo);
 
         console.log('Todo updated successfully:', updatedTodo);
+
     } catch (error) {
         console.error('Error updating todo:', error);
         res.status(500).json({ error: 'Failed to update todo' });
@@ -195,16 +196,13 @@ app.post('/api/register', async (req, res) => {
     try {
         const { username, password, email } = req.body;
 
-        // Check if the username or email already exists
         const existingUser = await Users.findOne({ $or: [{ username }, { email }] });
         if (existingUser) {
             return res.status(400).json({ error: 'Username or email already exists' });
         }
 
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 5);
 
-        // Create new user
         const newUser = new Users({ username, password: hashedPassword, email });
 
         await newUser.save();
@@ -221,19 +219,16 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Check if the user exists
         const user = await Users.findOne({ username });
         if (!user) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Check if the password is correct
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Generate JWT token
         const token = jwt.sign({ userId: user._id }, 'jeel', { expiresIn: '1h' });
 
         res.json({ token });
