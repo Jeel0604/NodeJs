@@ -80,7 +80,7 @@ app.get('/api/todos/:id', verifyToken, async (req, res) => {
         const userId = req.params.id;
         console.log(userId);
         filteredByCompletion = { completedTodos: await Todo.find({ userId: userId, completed: true }), inCompletedTodos: await Todo.find({ userId: userId, completed: false }) };
-        print(filteredByCompletion)
+        console.log(filteredByCompletion);
         res.json(filteredByCompletion);
     } catch (error) {
         console.error('Error fetching todos:', error);
