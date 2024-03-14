@@ -74,18 +74,19 @@ const verifyToken = (req, res, next) => {
     });
 };
 
+
 app.get('/api/todos/:id', verifyToken, async (req, res) => {
     try {
         const userId = req.params.id;
         console.log(userId);
-        const todos = await Todo.find({ userId: userId });
-        res.json(todos);
+        const filteredByCompletion = { completedTodos: await Todo.find({ userId: userId, completed: true }), inCompletedTodos: await Todo.find({ userId: userId, completed: false }) };
+
+        res.json(filteredByCompletion);
     } catch (error) {
         console.error('Error fetching todos:', error);
         res.status(500).json({ error: 'Failed to fetch todos' });
     }
 });
-
 
 
 function getCurrentDate() {
