@@ -52,11 +52,12 @@ const Users = mongoose.model('Users', userSchema);
 
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
+    console.log('Verifying token : ' + token);
     if (!token) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    jwt.verify(token, 'your-secret-key', (err, decoded) => {
+    jwt.verify(token, 'jeel', (err, decoded) => {
         if (err) {
             return res.status(401).json({ error: 'Invalid token' });
         }
@@ -68,17 +69,17 @@ const verifyToken = (req, res, next) => {
 app.get('/api/users', async (req, res) => {
     try {
         const users = await Users.find();
-        res.json(users);
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
 
-app.get('/api/todos', async (req, res) => {
+app.get('/api/todos/:id', verifyToken, async (req, res) => {
     try {
-        const userId = req.user.userId; // Assuming userId is available in req.user after authentication
-
+        const userId = req.params.userId;
+        console.log(userId);
         const todos = await Todo.find({ userId: userId });
         res.json(todos);
     } catch (error) {
@@ -86,6 +87,7 @@ app.get('/api/todos', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch todos' });
     }
 });
+
 
 
 function getCurrentDate() {
@@ -107,10 +109,10 @@ app.post('/api/todos', verifyToken, async (req, res) => {
         const currentDate = getCurrentDate();
 
         // Use req.user.userId to access the user ID
-        const userId = req.user.userId;
+        // const userId = req.newTodoData.userId;
 
         const newTodo = new Todo({
-            userId: userId,
+            userId: newTodoData.userId,
             title: newTodoData.title,
             description: newTodoData.description,
             completed: newTodoData.completed || false,
@@ -128,25 +130,25 @@ app.post('/api/todos', verifyToken, async (req, res) => {
 });
 
 
-app.get('/api/todos/:id', async (req, res) => {
-    const todoId = req.params.id;
+// app.get('/api/todos/:id', async (req, res) => {
+//     const todoId = req.params.id;
 
-    try {
+//     try {
 
-        const todo = await Todo.findOne({ _id: todoId });
+//         const todo = await Todo.findOne({ _id: todoId });
 
-        if (!todo) {
-            return res.status(404).json({ error: 'Todo not found' });
-        }
+//         if (!todo) {
+//             return res.status(404).json({ error: 'Todo not found' });
+//         }
 
-        res.json(todo);
+//         res.json(todo);
 
-        console.log('Todo retrieved successfully:', todo);
-    } catch (error) {
-        console.error('Error fetching todo:', error);
-        res.status(500).json({ error: 'Failed to fetch todo' });
-    }
-});
+//         console.log('Todo retrieved successfully:', todo);
+//     } catch (error) {
+//         console.error('Error fetching todo:', error);
+//         res.status(500).json({ error: 'Failed to fetch todo' });
+//     }
+// });
 
 
 app.put('/api/todos/:id', async (req, res) => {
