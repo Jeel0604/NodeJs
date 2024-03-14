@@ -49,6 +49,14 @@ const todos = [];
 const Todo = mongoose.model('Todo', todoSchema);
 const Users = mongoose.model('Users', userSchema);
 
+app.get('/api/users', async (req, res) => {
+    try {
+        const users = await Users.find();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
@@ -66,19 +74,9 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-app.get('/api/users', async (req, res) => {
-    try {
-        const users = await Users.find();
-        res.status(200).json(users);
-    } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-
 app.get('/api/todos/:id', verifyToken, async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.params.id;
         console.log(userId);
         const todos = await Todo.find({ userId: userId });
         res.json(todos);
