@@ -115,7 +115,7 @@ app.post('/api/todos', verifyToken, async (req, res) => {
             userId: newTodoData.userId,
             title: newTodoData.title,
             description: newTodoData.description,
-            category: newTodoData.category,
+            category: newTodoData.category || "default",
             completed: newTodoData.completed || false,
             date: newTodoData.date || currentDate,
         });
