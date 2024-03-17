@@ -107,7 +107,7 @@ app.post('/api/todos', verifyToken, async (req, res) => {
         // Now req.user will contain the decoded user object
         const newTodoData = req.body;
         const currentDate = getCurrentDate();
-
+        console.log(newTodoData);
         // Use req.user.userId to access the user ID
         // const userId = req.newTodoData.userId;
 
