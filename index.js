@@ -33,6 +33,7 @@ const todoSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' }, // Reference to Users collection
     title: String,
     description: String,
+    category: String,
     completed: Boolean,
     date: String
 }, { collection: "CollectionTodo" });
