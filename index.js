@@ -195,6 +195,7 @@ app.delete('/api/todos/:id', async (req, res) => {
 
 // Registration
 app.post('/api/register', async (req, res) => {
+    console.log("Register encountered");
     try {
         const { username, password, email } = req.body;
 
@@ -240,6 +241,26 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+
+app.get('/users/:id', async (req, res) => {
+
+    const userId = req.params.id;
+
+    try {
+        const user = await Users.findOne({ _id: userId });
+        if (!user) {
+            return res.status(401).json({ error: 'User Not Found' });
+        }
+        else {
+            console.log('User logged in: ' + user);
+            return res.json(user);
+        }
+
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).json({ error: 'Failed to login' });
+    }
+})
 
 
 app.listen(port, () => {
