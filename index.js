@@ -10,7 +10,7 @@ const port = 4000;
 
 
 app.use(cors({
-    origin: ['http://localhost:4200', 'https://cute-red-fox-tie.cyclic.app']
+    origin: ['http://localhost:4200', 'https://todo-jeel.netlify.app', 'https://cute-red-fox-tie.cyclic.app']
 }));
 
 app.use(bodyParser.json());
